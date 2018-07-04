@@ -12,7 +12,25 @@ const UPDATE_FACTORY_ERROR = 'UPDATE_FACTORY_ERROR';
 // const GENERATE_NUMBERS = 'GENERATE_NUMBERS';
 const GENERATE_NUMBERS_ERROR = 'GENERATE_NUMBERS_ERROR';
 
+// prettier-ignore
+function noop() {
+}
+
+function heartbeat() {
+  this.isAlive = true;
+}
+
 module.exports = wss => {
+  setInterval(() => {
+    // eslint-disable-next-line consistent-return
+    wss.clients.forEach(ws => {
+      if (ws.isAlive === false) return ws.terminate();
+      // eslint-disable-next-line no-param-reassign
+      ws.isAlive = false;
+      ws.ping(noop);
+    });
+  }, 1000);
+
   const getFactories = ws => {
     Factory.find({}, (err, factories) => {
       if (!err) {
@@ -161,6 +179,12 @@ module.exports = wss => {
   };
 
   wss.on('connection', ws => {
+
+
+    //eslint-disable-next-line no-param-reassign
+    ws.isAlive = true;
+    ws.on('pong', heartbeat);
+
     ws.on('message', message => {
       try {
         const parsedMessage = JSON.parse(message);
