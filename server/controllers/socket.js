@@ -29,7 +29,7 @@ module.exports = wss => {
       ws.isAlive = false;
       ws.ping(noop);
     });
-  }, 1000);
+  }, 30000);
 
   const getFactories = ws => {
     Factory.find({}, (err, factories) => {
